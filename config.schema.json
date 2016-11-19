@@ -1,0 +1,106 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "chocolateyPackages": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "localPackages": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "extension": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "args": {
+                        "type": "string"
+                    },
+                    "validExitCodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "required": ["name", "extension", "path", "args", "validExitCodes"]
+            }
+        },
+        "customInstallPackages": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "extension": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "args": {
+                        "type": "string"
+                    },
+                    "validExitCodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "required": ["name", "extension", "path", "args", "validExitCodes"]
+            }
+        },
+        "taskBarItems": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    }
+                },
+                "required": ["name", "path"]
+            }
+        },
+        "configs": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "destination": {
+                        "type": "string"
+                    },
+                    "symlink": {
+                        "type": "boolean"
+                    },
+                    "deleteIfExists": {
+                        "type": "boolean"
+                    }
+                },
+                "required": ["name", "source", "destination", "symlink", "deleteIfExists"]
+            }
+        }
+    },
+    "required": ["chocolateyPackages", "localPackages", "customInstallPackages", "taskBarItems", "configs"]
+}
