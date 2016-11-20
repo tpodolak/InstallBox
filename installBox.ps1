@@ -5,118 +5,93 @@ $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
 # $Boxstarter.NoPassword=$false # Is this a machine with no login password?
 # $Boxstarter.AutoLogin=$true # Save my password securely and auto-login after a reboot
 
-function Install-From-Process($packageName, $silentArgs, $filePath, $validExitCodes = @(0))
-{
+function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
     Write-Host "Installing $($packageName)"
     $process = Start-Process $filePath $silentArgs -NoNewWindow -Wait -PassThru
     if($validExitCodes -notcontains $process.ExitCode){
         Write-Error "Process $($filePath) returned invalid exit code $($process.ExitCode)"
-        Write-Error "Package $($packageName) was not installed correctly"
+        Write-Error "Package $($packageName) was not installed correctly"   
     }else{
         Write-Host "Package $($packageName) was successfully installed"
     }
 }
 
-function Install-Custom-Packages($packages, $installedPackages)
-{
-    foreach($package in $packages)
-    {
-        if($installedPackages -like "*$($package.name)*")
-        {
+function Install-Custom-Packages ($packages, $installedPackages){
+    foreach ($package in $packages) {
+        if($installedPackages -like "*$($package.name)*"){
             Write-Host "Package $($package.name) already installed"
-        }else
-        {
-           Install-From-Process $package.name $ExecutionContext.InvokeCommand.ExpandString($package.args) $package.path $package.validExitCodes
+        }else{
+            Install-From-Process $package.name $ExecutionContext.InvokeCommand.ExpandString($package.args) $package.path $package.validExitCodes
         }
-
     }
 }
 
-function Install-Local-Packages($packages, $installedPackages)
-{
-    foreach($package in $packages)
-    {
-     if($installedPackages -like "*$($package.name)*")
-        {
-            Write-Host "Package $($package.name) already installed"
-        }else
-        {
+function Install-Local-Packages ($packages, $installedPackages){
+    foreach ($package in $packages) {
+        if($installedPackages -like "*$($package.name)*"){
+            Write-Host "Package $($package.name) already installed"            
+        }else{
             Install-ChocolateyInstallPackage $package.name $package.extension $ExecutionContext.InvokeCommand.ExpandString($package.args) $package.path $package.validExitCodes
         }
     }
 }
 
-function Install-Choco-Packages($packages)
-{
-    foreach($package in $packages)
-    {
+function Install-Choco-Packages ($packages){
+    foreach ($package in $packages) {
         cinst $package
     }
 }
 
-function Install-Windows-Features($packages)
-{
-    foreach($package in $packages)
-    {
-        cinst $package -source windowsfeatures
+function Install-Windows-Features ($packages){
+    foreach ($package in $packages) {
+        cinst $package -Source windowsfeatures
     }
 }
 
-function Copy-Configs($packages)
-{
-    foreach($package in $packages){
+function Copy-Configs ($packages){
+    foreach ($package in $packages) {
+        $source = $ExecutionContext.InvokeCommand.ExpandString($package.source)
+        $destination = $ExecutionContext.InvokeCommand.ExpandString($package.destination)
 
-    $source = $ExecutionContext.InvokeCommand.ExpandString($package.source)
-    $destination = $ExecutionContext.InvokeCommand.ExpandString($package.destination)
         Write-Host "Copying configs for $($package.name)"
-
+        
         Restore-Folder-Structure $destination
-        if($package.deleteIfExists -and (Test-Path $destination)){
+        if($package.deleteIfExists -and (Test-Path $destination)) {
             cmd /c rmdir /s /q $destination
-         }
-
-        if($package.symlink)
-        {
-            Create-Directory-Symlink $source $destination
-        }else
-        {
-            Copy-Item $source $destination -recurse
         }
-   
+
+        if($package.symlink){
+            New-Directory-Symlink $source $destination
+        }else{
+            Copy-Item $source $destination -Recurse
+        }
+        
         Write-Host "Config copied"
-   }
+    }
 }
 
-function Pin-TaskBar-Items($packages)
-{
- foreach($package in $packages){
-
-        $path = $ExecutionContext.InvokeCommand.ExpandString($package.path);
-
-        Write-Host "Pinning $($package.name)"         
-
+function Pin-TaskBar-Items ($packages){
+    foreach ($package in $packages) {
+        $path = $ExecutionContext.InvokeCommand.ExpandString($package.path)
+        Write-Host "Pinning $($package.name)"
         Install-ChocolateyPinnedTaskBarItem $path
-   
         Write-Host "Item pinned"
-   }
+    }
 }
 
-function Restore-Folder-Structure($path)
-{
-    #restores all the directories included in path
-       if(!(Test-Path $path)){
+function Restore-Folder-Structure ($path){
+    if(!(Test-Path $path)){
         New-Item -ItemType Directory -Path $path
-   }
+    }
 }
 
-function New-Directory-Symlink($source, $destination)
-{
+function New-Directory-Symlink ($source,$destination){
     cmd /c mklink /D $destination $source
 }
 
-[Environment]::SetEnvironmentVariable("BoxstarterConfig", "E:\\Tomek\\Programowanie\\Github\\Boxstarter\\config.json" , "Machine")
+[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\Tomek\\Programowanie\\Github\\Boxstarter\\config.json","Machine")
 
-$config =  Get-Content ([Environment]::GetEnvironmentVariable("BoxstarterConfig", "Machine")) -Raw | ConvertFrom-Json 
+$config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig","Machine")) -Raw | ConvertFrom-Json
 
 Write-Host "Config file loaded $($config)"
 
