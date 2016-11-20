@@ -24,8 +24,8 @@ $TOOLS_DIR = Join-Path $PSScriptRoot "tools"
 $NUGET_EXE = Join-Path $TOOLS_DIR "nuget.exe"
 $NUGET_URL = "http://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 $PACKAGES_CONFIG = Join-Path $TOOLS_DIR "packages.config"
-$NEWTONSOFT_JSON_SCHEMA = Join-Path $PSScriptRoot "tools\Newtonsoft.Json.Schema\lib\net45\Newtonsoft.Json.Schema.dll"
-$NEWTONSOFT_JSON = Join-Path $PSScriptRoot "tools\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll"
+$NEWTONSOFT_JSON_SCHEMA = Join-Path $PSScriptRoot "tools\Newtonsoft.Json.Schema\lib\net40\Newtonsoft.Json.Schema.dll"
+$NEWTONSOFT_JSON = Join-Path $PSScriptRoot "tools\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll"
 Write-Host $NEWTONSOFT_JSON_SCHEMA
 Write-Host $NEWTONSOFT_JSON
 
@@ -70,16 +70,19 @@ Write-Host "Abount to load file"
 Add-Type -Path $NEWTONSOFT_JSON
 Add-Type -Path $NEWTONSOFT_JSON_SCHEMA
 
+[System.Collections.Generic.List[String]] $errorMessages = New-Object System.Collections.Generic.List[String];
 [Newtonsoft.Json.Linq.JToken] $jsonConfig = [Newtonsoft.Json.Linq.JObject]::Parse((Get-Content $Config))
 [Newtonsoft.Json.Schema.JSchema] $jsonSchema = [Newtonsoft.Json.Schema.JSchema]::Parse((Get-Content $ConfigSchema -Raw))
 
 Write-Host $jsonConfig.GetType().AssemblyQualifiedName
 Write-Host $jsonSchema.GetType().AssemblyQualifiedName
 
-if(![Newtonsoft.Json.Schema.SchemaExtensions]::IsValid($jsonConfig, $jsonSchema)){
-    throw "Invalid json";
+
+
+if(![Newtonsoft.Json.Schema.SchemaExtensions]::IsValid($jsonConfig, $jsonSchema, [ref] $errorMessages)){
+    throw "Invalid config.json:" + [System.Environment]::NewLine + [String]::Join([System.Environment]::NewLine, $errorMessages);
 }else{
-    Write-Host  "Valid configuration loaded";
+    Write-Host "Valid configuration loaded"
 }
 
 exit $LASTEXITCODE
