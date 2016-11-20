@@ -8,6 +8,12 @@
                 "type": "string"
             }
         },
+        "windowsFeatures": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "localPackages": {
             "type": "array",
             "items": {

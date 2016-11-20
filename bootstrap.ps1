@@ -1,7 +1,8 @@
+
 <#
 
 .SYNOPSIS
-This is a Powershell script to restore windows environment based on config.json file
+This is a Powershell script to restore windows environment based on config.json file using Boxstarter
 
 .DESCRIPTION
 This Powershell script will download NuGet if missing, restore NuGet libraries
@@ -10,12 +11,10 @@ and install applications listed in config.json file
 #>
 
 [CmdletBinding()]
-Param(
-    [string]$Config = "config.json",
-    [string]$ConfigSchema = "config.schema.json"
-    )
+Param([string]$Config = "config.json")
 
-
+$ErrorActionPreference = "Stop"
+$configSchema = "config.schema.json"
 
 Write-Host "Preparing to run build script..."
 
@@ -65,24 +64,24 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host ($NuGetOutput | out-string)
 
-Write-Host "Abount to load file"
+Write-Host "About to load file `{$NEWTONSOFT_JSON}`, `{$NEWTONSOFT_JSON_SCHEMA}` assemblies"
 
 Add-Type -Path $NEWTONSOFT_JSON
 Add-Type -Path $NEWTONSOFT_JSON_SCHEMA
 
+Write-Host "Assemblies successfully loaded"
+
 [System.Collections.Generic.List[String]] $errorMessages = New-Object System.Collections.Generic.List[String];
 [Newtonsoft.Json.Linq.JToken] $jsonConfig = [Newtonsoft.Json.Linq.JObject]::Parse((Get-Content $Config))
-[Newtonsoft.Json.Schema.JSchema] $jsonSchema = [Newtonsoft.Json.Schema.JSchema]::Parse((Get-Content $ConfigSchema -Raw))
-
-Write-Host $jsonConfig.GetType().AssemblyQualifiedName
-Write-Host $jsonSchema.GetType().AssemblyQualifiedName
-
-
+[Newtonsoft.Json.Schema.JSchema] $jsonSchema = [Newtonsoft.Json.Schema.JSchema]::Parse((Get-Content $configSchema -Raw))
 
 if(![Newtonsoft.Json.Schema.SchemaExtensions]::IsValid($jsonConfig, $jsonSchema, [ref] $errorMessages)){
     throw "Invalid config.json:" + [System.Environment]::NewLine + [String]::Join([System.Environment]::NewLine, $errorMessages);
 }else{
     Write-Host "Valid configuration loaded"
 }
+
+$key = "BoxstarterConfig"
+[Environment]::SetEnvironmentVariable($key, $Config, "Machine") 
 
 exit $LASTEXITCODE

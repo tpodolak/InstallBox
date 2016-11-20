@@ -1,8 +1,9 @@
-
-function Create-Directory-Symlink($source, $destination)
-{
-    cmd /c mklink /D $destination $source
-}
+$ErrorActionPreference = "Stop"
+$installedPrograms = Get-Package -ProviderName Programs | select -Property Name
+# Boxstarter options
+# $Boxstarter.RebootOk=$true # Allow reboots?
+# $Boxstarter.NoPassword=$false # Is this a machine with no login password?
+# $Boxstarter.AutoLogin=$true # Save my password securely and auto-login after a reboot
 
 function Install-From-Process($packageName, $silentArgs, $filePath, $validExitCodes = @(0))
 {
@@ -107,3 +108,42 @@ function Restore-Folder-Structure($path)
         New-Item -ItemType Directory -Path $path
    }
 }
+
+function New-Directory-Symlink($source, $destination)
+{
+    cmd /c mklink /D $destination $source
+}
+
+[Environment]::SetEnvironmentVariable("BoxstarterConfig", "E:\\Tomek\\Programowanie\\Github\\Boxstarter\\config.json" , "Machine")
+
+$config =  Get-Content ([Environment]::GetEnvironmentVariable("BoxstarterConfig", "Machine")) -Raw | ConvertFrom-Json 
+
+Write-Host "Config file loaded $($config)"
+
+Write-Host "About to install local packages"
+Install-Local-Packages $config.localPackages $installedPrograms
+Write-Host "Local packages installed"
+
+Write-Host "About to install custom packages"
+Install-Custom-Packages $config.customInstallPackages $installedPrograms
+Write-Host "Custom packages installed"
+
+Write-Host "About to install choco packages"
+Install-Choco-Packages $config.chocolateyPackages
+Write-Host "Choco packages installed"
+
+Write-Host "About to install windows features"
+Install-Windows-Features $config.features
+Write-Host "Windows features installed"
+
+Write-Host "About to copy configs"
+Copy-Configs $config.configs
+Write-Host "Configs copied"
+
+Write-Host "About to pin taskbar items"
+Pin-TaskBar-Items $config.taskBarItems
+Write-Host "Taskbar items pinned"
+
+Write-Host "About to install windows updates"
+Install-WindowsUpdate -Full -SuppressReboots
+Write-Host "Windows updates installed"
