@@ -8,40 +8,7 @@
                 "type": "string"
             }
         },
-        "windowsFeatures": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
         "localPackages": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "extension": {
-                        "type": "string"
-                    },
-                    "path": {
-                        "type": "string"
-                    },
-                    "args": {
-                        "type": "string"
-                    },
-                    "validExitCodes": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer"
-                        }
-                    }
-                },
-                "required": ["name", "extension", "path", "args", "validExitCodes"]
-            }
-        },
-        "customInstallPackages": {
             "type": "array",
             "items": {
                 "type": "object",
@@ -106,7 +73,13 @@
                 },
                 "required": ["name", "source", "destination", "symlink", "deleteIfExists"]
             }
+        },
+        "windowsFeatures": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         }
     },
-    "required": ["chocolateyPackages", "localPackages", "customInstallPackages", "taskBarItems", "configs"]
+    "required": ["chocolateyPackages", "localPackages", "taskBarItems", "configs", "windowsFeatures"]
 }

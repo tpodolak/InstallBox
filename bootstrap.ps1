@@ -15,6 +15,7 @@ Param([string]$Config = "config.json")
 
 $ErrorActionPreference = "Stop"
 $configSchema = "config.schema.json"
+$pathValidationConfig = @{ "localPackages" = @("path"); "configs" = @("source"); }
 
 Write-Host "Preparing to run build script..."
 
@@ -76,8 +77,25 @@ Write-Host "Assemblies successfully loaded"
 [Newtonsoft.Json.Schema.JSchema] $jsonSchema = [Newtonsoft.Json.Schema.JSchema]::Parse((Get-Content $configSchema -Raw))
 
 if(![Newtonsoft.Json.Schema.SchemaExtensions]::IsValid($jsonConfig, $jsonSchema, [ref] $errorMessages)){
-    throw "Invalid config.json:" + [System.Environment]::NewLine + [String]::Join([System.Environment]::NewLine, $errorMessages);
+    throw "Config.json does not match the schema:" + [System.Environment]::NewLine + [String]::Join([System.Environment]::NewLine, $errorMessages);
 }else{
+
+    $invalidPaths = New-Object System.Collections.Generic.List[string]
+    foreach ($item in $pathValidationConfig.GetEnumerator()){
+        foreach ($token in $jsonConfig[$item.Key]) {
+            foreach ($prop in $item.Value) {
+                $expandedPath = $ExecutionContext.InvokeCommand.ExpandString($token[$prop].ToString())
+                if(!(Test-Path $expandedPath)){
+                    $invalidPaths.Add($expandedPath);
+                }
+            }
+        }
+    }
+
+    if($invalidPaths.Count -gt 0){
+        throw "Invalid paths detected: " + [System.Environment]::NewLine + [String]::Join([System.Environment]::NewLine, $invalidPaths)
+    }
+
     Write-Host "Valid configuration loaded"
 }
 

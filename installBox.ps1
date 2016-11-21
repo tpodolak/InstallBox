@@ -1,5 +1,4 @@
 $ErrorActionPreference = "Stop"
-$installedPrograms = Get-Package -ProviderName Programs | select -Property Name
 # Boxstarter options
 # $Boxstarter.RebootOk=$true # Allow reboots?
 # $Boxstarter.NoPassword=$false # Is this a machine with no login password?
@@ -7,7 +6,10 @@ $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
 
 function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
     Write-Host "Installing $($packageName)"
-    $process = Start-Process $filePath $silentArgs -NoNewWindow -Wait -PassThru
+    $expandedFilePath = Expand-String $filePath
+    $expandedSilentArgs = Expand-String $silentArgs;
+
+    $process = Start-Process $expandedFilePath $expandedSilentArgs -NoNewWindow -Wait -PassThru
     if($validExitCodes -notcontains $process.ExitCode){
         Write-Error "Process $($filePath) returned invalid exit code $($process.ExitCode)"
         Write-Error "Package $($packageName) was not installed correctly"   
@@ -16,22 +18,14 @@ function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitC
     }
 }
 
-function Install-Custom-Packages ($packages, $installedPackages){
+function Install-Local-Packages ($packages, $installedPackages){
     foreach ($package in $packages) {
         if($installedPackages -like "*$($package.name)*"){
             Write-Host "Package $($package.name) already installed"
         }else{
-            Install-From-Process $package.name $ExecutionContext.InvokeCommand.ExpandString($package.args) $package.path $package.validExitCodes
-        }
-    }
-}
-
-function Install-Local-Packages ($packages, $installedPackages){
-    foreach ($package in $packages) {
-        if($installedPackages -like "*$($package.name)*"){
-            Write-Host "Package $($package.name) already installed"            
-        }else{
-            Install-ChocolateyInstallPackage $package.name $package.extension $ExecutionContext.InvokeCommand.ExpandString($package.args) $package.path $package.validExitCodes
+            $expandedArgs = Expand-String $package.args
+            $expandedPath = Expand-String $package.path
+            Install-From-Process $package.name $expandedArgs $expandedPath $package.validExitCodes
         }
     }
 }
@@ -50,8 +44,8 @@ function Install-Windows-Features ($packages){
 
 function Copy-Configs ($packages){
     foreach ($package in $packages) {
-        $source = $ExecutionContext.InvokeCommand.ExpandString($package.source)
-        $destination = $ExecutionContext.InvokeCommand.ExpandString($package.destination)
+        $source = Expand-String $package.source
+        $destination = Expand-String $package.destination
 
         Write-Host "Copying configs for $($package.name)"
         
@@ -65,14 +59,14 @@ function Copy-Configs ($packages){
         }else{
             Copy-Item $source $destination -Recurse
         }
-        
+
         Write-Host "Config copied"
     }
 }
 
-function Pin-TaskBar-Items ($packages){
+function New-TaskBar-Items ($packages){
     foreach ($package in $packages) {
-        $path = $ExecutionContext.InvokeCommand.ExpandString($package.path)
+        $path = Expand-String $package.path
         Write-Host "Pinning $($package.name)"
         Install-ChocolateyPinnedTaskBarItem $path
         Write-Host "Item pinned"
@@ -89,23 +83,25 @@ function New-Directory-Symlink ($source,$destination){
     cmd /c mklink /D $destination $source
 }
 
+function Expand-String($source){
+    return $ExecutionContext.InvokeCommand.ExpandString($source)
+}
+
+#just for test
 [environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\Tomek\\Programowanie\\Github\\Boxstarter\\config.json","Machine")
 
-$config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig","Machine")) -Raw | ConvertFrom-Json
+$installedPrograms = Get-Package -ProviderName Programs | select -Property Name
+$config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig","Machine")) -Raw  | ConvertFrom-Json
 
 Write-Host "Config file loaded $($config)"
-
-Write-Host "About to install local packages"
-Install-Local-Packages $config.localPackages $installedPrograms
-Write-Host "Local packages installed"
-
-Write-Host "About to install custom packages"
-Install-Custom-Packages $config.customInstallPackages $installedPrograms
-Write-Host "Custom packages installed"
 
 Write-Host "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages
 Write-Host "Choco packages installed"
+
+Write-Host "About to install local packages"
+Install-Local-Packages $config.localPackages $installedPrograms
+Write-Host "Local packages installed"
 
 Write-Host "About to install windows features"
 Install-Windows-Features $config.features
@@ -116,7 +112,7 @@ Copy-Configs $config.configs
 Write-Host "Configs copied"
 
 Write-Host "About to pin taskbar items"
-Pin-TaskBar-Items $config.taskBarItems
+New-TaskBar-Items $config.taskBarItems
 Write-Host "Taskbar items pinned"
 
 Write-Host "About to install windows updates"
