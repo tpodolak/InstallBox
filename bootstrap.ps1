@@ -11,13 +11,18 @@ and install applications listed in config.json file
 #>
 
 [CmdletBinding()]
-Param([string]$Config = "config.json")
+Param(
+    [string]$Config = "config.json",
+    [string]$InstallScript = "https://raw.githubusercontent.com/tpodolak/Boxstarter/master/installBox.ps1"
+    )
+
+$webLaucher = "http://boxstarter.org/package/nr/url?$InstallScript"
 
 $ErrorActionPreference = "Stop"
 $configSchema = "config.schema.json"
 $pathValidationConfig = @{ "localPackages" = @("path"); "configs" = @("source"); }
 
-Write-Host "Preparing to run build script..."
+Write-Host "Preparing to run build script with configuration $Config"
 
 $PSScriptRoot = split-path -parent $MyInvocation.MyCommand.Definition;
 $TOOLS_DIR = Join-Path $PSScriptRoot "tools"
@@ -57,6 +62,16 @@ if (!(Test-Path $NUGET_EXE)) {
 }
 
 # Restore tools from NuGet
+Write-Host "Creating packages.config"
+$content = @"
+<?xml version="1.0" encoding="utf-8"?>
+<packages>
+  <package id="Newtonsoft.Json" version="9.0.1" targetFramework="net40" />
+  <package id="Newtonsoft.Json.Schema" version="2.0.7" targetFramework="net40" />
+</packages>
+"@
+New-Item "$($PSScriptRoot)\packages.config" -ItemType File -Force -Value $content.ToString()
+Write-Host "packages.config created"
 
 Write-Host "Restoring tools from NuGet..."
 $NuGetOutput = Invoke-Expression "&`"$NUGET_EXE`" install -ExcludeVersion -OutputDirectory `"$TOOLS_DIR`""
@@ -99,7 +114,12 @@ if(![Newtonsoft.Json.Schema.SchemaExtensions]::IsValid($jsonConfig, $jsonSchema,
     Write-Host "Valid configuration loaded"
 }
 
-$key = "BoxstarterConfig"
-[Environment]::SetEnvironmentVariable($key, $Config, "Machine") 
+Write-Host "About to store config path"
+[Environment]::SetEnvironmentVariable("BoxstarterConfig", $Config, "Machine") 
+Write-Host "Config path stored"
+
+# Write-Host "Abount to launched ClickOnce installer"
+# Start-Process "rundll32.exe"  "dfshim.dll,ShOpenVerbApplication $webLaucher" -NoNewWindow -PassThru
+# Write-Host "ClickOnce installer launched"
 
 exit $LASTEXITCODE

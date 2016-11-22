@@ -92,12 +92,21 @@ function Expand-String($source){
 
 $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
 $config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig","Machine")) -Raw  | ConvertFrom-Json
+if($config -eq $null){
+    throw "Unable to load config file"
+}
+
+$ErrorActionPreference = "Continue"
 
 Write-Host "Config file loaded $($config)"
 
 Write-Host "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages
 Write-Host "Choco packages installed"
+
+Write-Host "Refreshing environment variabes"
+refreshenv
+Write-Host "Environment variabes refreshed"
 
 Write-Host "About to install local packages"
 Install-Local-Packages $config.localPackages $installedPrograms
