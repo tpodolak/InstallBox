@@ -88,7 +88,7 @@ function Expand-String($source){
 }
 
 #just for test
-[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\Tomek\\Programowanie\\Github\\Boxstarter\\config.json","Machine")
+#[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\Tomek\\Programowanie\\Github\\Boxstarter\\config.json","Machine")
 
 $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
 $config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig","Machine")) -Raw  | ConvertFrom-Json
