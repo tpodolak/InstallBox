@@ -16,6 +16,19 @@ Param(
     [string]$InstallScript = "https://raw.githubusercontent.com/tpodolak/Boxstarter/master/installBox.ps1"
     )
 
+function Get-File ($url, $location) {
+    if (!(Test-Path $location)) {
+        Write-Host "Downloading {$location}"
+        try {
+            (New-Object System.Net.WebClient).DownloadFile($url, $location)
+        } catch {
+            Throw "Could not download {$location}"
+        }
+    }else{
+        Write-Host "File $($location) already exists"
+    }
+}
+
 $webLaucher = "http://boxstarter.org/package/nr/url?$InstallScript"
 
 $ErrorActionPreference = "Stop"
@@ -25,10 +38,12 @@ $pathValidationConfig = @{ "localPackages" = @("path"); "configs" = @("source");
 Write-Host "Preparing to run build script with configuration $Config"
 
 $PSScriptRoot = split-path -parent $MyInvocation.MyCommand.Definition;
+$RAW_FILES_URL = "https://raw.githubusercontent.com/tpodolak/Boxstarter/master/"
 $TOOLS_DIR = Join-Path $PSScriptRoot "tools"
 $NUGET_EXE = Join-Path $TOOLS_DIR "nuget.exe"
 $NUGET_URL = "http://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
 $PACKAGES_CONFIG = Join-Path $TOOLS_DIR "packages.config"
+$CONFIG_SCHEMA_FILE_LOCATION = Join-Path $PSScriptRoot $configSchema
 $NEWTONSOFT_JSON_SCHEMA = Join-Path $PSScriptRoot "tools\Newtonsoft.Json.Schema\lib\net40\Newtonsoft.Json.Schema.dll"
 $NEWTONSOFT_JSON = Join-Path $PSScriptRoot "tools\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll"
 Write-Host $NEWTONSOFT_JSON_SCHEMA
@@ -51,15 +66,9 @@ if (!(Test-Path $NUGET_EXE)) {
     }
 }
 
-# Try download NuGet.exe if not exists
-if (!(Test-Path $NUGET_EXE)) {
-    Write-Host "Downloading NuGet.exe..."
-    try {
-        (New-Object System.Net.WebClient).DownloadFile($NUGET_URL, $NUGET_EXE)
-    } catch {
-        Throw "Could not download NuGet.exe."
-    }
-}
+Get-File $NUGET_URL $NUGET_EXE
+
+Get-File ("$($RAW_FILES_URL)config.schema.json") $CONFIG_SCHEMA_FILE_LOCATION
 
 # Restore tools from NuGet
 Write-Host "Creating packages.config"
@@ -122,4 +131,7 @@ Write-Host "Config path stored"
 # Start-Process "rundll32.exe"  "dfshim.dll,ShOpenVerbApplication $webLaucher" -NoNewWindow -PassThru
 # Write-Host "ClickOnce installer launched"
 
+
 exit $LASTEXITCODE
+
+
