@@ -1,3 +1,4 @@
 tools/
-config.json
 .vscode/
+config.json
+packages.config
