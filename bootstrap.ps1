@@ -127,9 +127,9 @@ Write-Host "About to store config path"
 [Environment]::SetEnvironmentVariable("BoxstarterConfig", $Config, "Machine") 
 Write-Host "Config path stored"
 
-# Write-Host "Abount to launched ClickOnce installer"
-# Start-Process "rundll32.exe"  "dfshim.dll,ShOpenVerbApplication $webLaucher" -NoNewWindow -PassThru
-# Write-Host "ClickOnce installer launched"
+Write-Host "Abount to launched ClickOnce installer"
+Start-Process "rundll32.exe"  "dfshim.dll,ShOpenVerbApplication $webLaucher" -NoNewWindow -PassThru
+Write-Host "ClickOnce installer launched"
 
 
 exit $LASTEXITCODE
