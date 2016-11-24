@@ -128,7 +128,9 @@ Write-Host "About to store config path"
 Write-Host "Config path stored"
 
 Write-Host "Abount to launched ClickOnce installer with $($webLaucher)"
-Start-Process "rundll32.exe"  "dfshim.dll,ShOpenVerbApplication $webLaucher" -NoNewWindow -PassThru
+#Start-Process "rundll32.exe"  "dfshim.dll,ShOpenVerbApplication $webLaucher" -NoNewWindow -PassThru
+$ie = New-Object -ComObject InternetExplorer.Application
+$ie.Navigate($webLaucher)
 Write-Host "ClickOnce installer launched"
 
 
