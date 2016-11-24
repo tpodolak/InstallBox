@@ -29,7 +29,7 @@ function Get-File ($url, $location) {
     }
 }
 
-$webLaucher = "http://boxstarter.org/package/nr/url?$InstallScript"
+$webLaucher = "http://boxstarter.org/package/url?$InstallScript"
 
 $ErrorActionPreference = "Stop"
 $configSchema = "config.schema.json"
@@ -127,7 +127,7 @@ Write-Host "About to store config path"
 [Environment]::SetEnvironmentVariable("BoxstarterConfig", $Config, "Machine") 
 Write-Host "Config path stored"
 
-Write-Host "Abount to launched ClickOnce installer"
+Write-Host "Abount to launched ClickOnce installer with $($webLaucher)"
 Start-Process "rundll32.exe"  "dfshim.dll,ShOpenVerbApplication $webLaucher" -NoNewWindow -PassThru
 Write-Host "ClickOnce installer launched"
 
