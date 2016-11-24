@@ -1,8 +1,8 @@
 $ErrorActionPreference = "Stop"
 # Boxstarter options
-# $Boxstarter.RebootOk=$true # Allow reboots?
-# $Boxstarter.NoPassword=$false # Is this a machine with no login password?
-# $Boxstarter.AutoLogin=$true # Save my password securely and auto-login after a reboot
+$Boxstarter.RebootOk=$true
+$Boxstarter.NoPassword=$false
+$Boxstarter.AutoLogin=$true
 
 function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
     Write-Host "Installing $($packageName)"
