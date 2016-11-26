@@ -108,13 +108,13 @@ Write-Host "Refreshing environment variabes"
 refreshenv
 Write-Host "Environment variabes refreshed"
 
-Write-Host "About to install local packages"
-Install-Local-Packages $config.localPackages $installedPrograms
-Write-Host "Local packages installed"
-
 Write-Host "About to install windows features"
 Install-Windows-Features $config.features
 Write-Host "Windows features installed"
+
+Write-Host "About to install local packages"
+Install-Local-Packages $config.localPackages $installedPrograms
+Write-Host "Local packages installed"
 
 Write-Host "About to copy configs"
 Copy-Configs $config.configs
