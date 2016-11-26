@@ -109,7 +109,7 @@ refreshenv
 Write-Host "Environment variabes refreshed"
 
 Write-Host "About to install windows features"
-Install-Windows-Features $config.features
+Install-Windows-Features $config.windowsFeatures
 Write-Host "Windows features installed"
 
 Write-Host "About to install local packages"
