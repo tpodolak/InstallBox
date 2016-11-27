@@ -76,8 +76,8 @@ function New-TaskBar-Items ($packages){
 function Invoke-Custom-Scripts ($scripts) {
     foreach ($script in $scripts) {
         Write-Host "Abount to run custom script $($script.name)"
-        Invoke-Command -ScriptBlock { & $script.value }
-        Write-Host "Finished running $($script) script"        
+        Invoke-Expression $script.value
+        Write-Host "Finished running $($script.name) script"        
     }
 }
 
@@ -138,3 +138,4 @@ Write-Host "Taskbar items pinned"
 Write-Host "About to install windows updates"
 Install-WindowsUpdate -Full -SuppressReboots
 Write-Host "Windows updates installed"
+
