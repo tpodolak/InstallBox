@@ -57,7 +57,7 @@ function Copy-Configs ($packages){
         if($package.symlink){
             New-Directory-Symlink $source $destination
         }else{
-            Copy-Item $source $destination -Recurse
+            Copy-Item $source $destination -Recurse -Force
         }
 
         Write-Host "Config copied"
@@ -70,6 +70,14 @@ function New-TaskBar-Items ($packages){
         Write-Host "Pinning $($package.name)"
         Install-ChocolateyPinnedTaskBarItem $path
         Write-Host "Item pinned"
+    }
+}
+
+function Invoke-Custom-Scripts ($scripts) {
+    foreach ($script in $scripts) {
+        Write-Host "Abount to run custom script $($script.name)"
+        Invoke-Command -ScriptBlock { & $script.value }
+        Write-Host "Finished running $($script) script"        
     }
 }
 
@@ -88,7 +96,7 @@ function Expand-String($source){
 }
 
 #just for test
-#[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\Tomek\\Programowanie\\Github\\Boxstarter\\config.json","Machine")
+#[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\OneDrive\\Configs\\Boxstarter\\config.json", "Machine")
 
 $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
 $config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig","Machine")) -Raw  | ConvertFrom-Json
@@ -99,6 +107,7 @@ if($config -eq $null){
 $ErrorActionPreference = "Continue"
 
 Write-Host "Config file loaded $($config)"
+
 
 Write-Host "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages
@@ -113,6 +122,10 @@ Write-Host "Windows features installed"
 Write-Host "About to install local packages"
 Install-Local-Packages $config.localPackages $installedPrograms
 Write-Host "Local packages installed"
+
+Write-Host "About to run custom scripts"
+Invoke-Custom-Scripts $config.customScripts
+Write-Host "Custom scripts run";
 
 Write-Host "About to copy configs"
 Copy-Configs $config.configs
