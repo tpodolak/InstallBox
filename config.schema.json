@@ -74,6 +74,21 @@
                 "required": ["name", "source", "destination", "symlink", "deleteIfExists"]
             }
         },
+        "customScripts": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "required": ["name", "value"]
+            }
+        },
         "windowsFeatures": {
             "type": "array",
             "items": {
@@ -81,5 +96,5 @@
             }
         }
     },
-    "required": ["chocolateyPackages", "localPackages", "taskBarItems", "configs", "windowsFeatures"]
+    "required": ["chocolateyPackages", "localPackages", "taskBarItems", "configs", "customScripts", "windowsFeatures"]
 }
