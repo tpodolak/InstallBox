@@ -21,7 +21,7 @@ function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitC
 function Install-Local-Packages ($packages, $installedPackages){
     foreach ($package in $packages) {
         if($installedPackages -like "*$($package.name)*"){
-            Write-Host "Package $($package.name) already installed"
+            Write-Warning "Package $($package.name) already installed"
         }else{
             $expandedArgs = Expand-String $package.args
             $expandedPath = Expand-String $package.path
@@ -104,9 +104,7 @@ Write-Host "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages
 Write-Host "Choco packages installed"
 
-Write-Host "Refreshing environment variabes"
 refreshenv
-Write-Host "Environment variabes refreshed"
 
 Write-Host "About to install windows features"
 Install-Windows-Features $config.windowsFeatures
