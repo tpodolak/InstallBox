@@ -4,17 +4,19 @@ $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$false
 $Boxstarter.AutoLogin=$true
 
-$pendingFileRenames = @( Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement" )
+$regexPath = (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement") -replace "\\","\\"
+
+$pendingFileRenames = @( "\\\?\?\\$($regexPath)" + "*.+" )
 
 function Clear-Known-Pending-Renames($pendingRenames){
-    foreach($location in $pendingRenames){
-        if(Test-Path $location){
-            Write-Host "Pending file rename $($location) found, deleting"
-            Remove-Item $location -recurse -force
-        }else{
-            Write-Host "Pending file rename $($location) not found"
-        }
+    $regKey = "HKLM:SYSTEM\CurrentControlSet\Control\Session Manager\"
+    $regProperty = "PendingFileRenameOperations"
+    $currentValue = Get-ItemProperty -Path $regKey | Select -ExpandProperty $regProperty
+
+    foreach($value in $pendingFileRenames){
+        $currentValue = $currentValue -replace $value, ""
     }
+    Set-ItemProperty -Path $regKey -Name $regProperty -Value $currentValue
 }
 
 function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
