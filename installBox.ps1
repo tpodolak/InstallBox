@@ -6,7 +6,7 @@ $Boxstarter.AutoLogin=$true
 
 $regexPath = (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement") -replace "\\","\\"
 
-$pendingFileRenames = @( "\\\?\?\\$($regexPath)" + "*.+" )
+$pendingFileRenames = @( "\\\?\?\\$($regexPath)" + "*.+\r\n?|\n" )
 
 function Clear-Known-Pending-Renames($pendingRenames){
     $regKey = "HKLM:SYSTEM\CurrentControlSet\Control\Session Manager\"
