@@ -12,14 +12,14 @@ function Clear-Known-Pending-Renames($pendingRenames){
     $regKey = "HKLM:SYSTEM\CurrentControlSet\Control\Session Manager\"
     $regProperty = "PendingFileRenameOperations"
     $currentValue = Get-ItemProperty -Path $regKey | Select -ExpandProperty $regProperty
-    Write-Host "Current pending file rename operations $($currentValue)"
+    Write-Host "Current pending file rename operations $(Get-PendingReboot)"
     foreach($value in $pendingFileRenames){
         $currentValue = $currentValue -replace $value, ""
     }
 
     Set-ItemProperty -Path $regKey -Name $regProperty -Value $currentValue
     $currentValue = Get-ItemProperty -Path $regKey | Select -ExpandProperty $regProperty
-    Write-Host "Updated pending file rename operations $($currentValue)"
+    Write-Host "Updated pending file rename operations $(Get-PendingReboot)"
 }
 
 function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
