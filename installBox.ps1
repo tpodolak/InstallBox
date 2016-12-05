@@ -4,6 +4,19 @@ $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$false
 $Boxstarter.AutoLogin=$true
 
+$pendingFileRenames = @( Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement" )
+
+function Clear-Known-Pending-Renames($pendingRenames){
+    foreach($location in $pendingRenames){
+        if(Test-Path $location){
+            Write-Host "Pending file rename $($location) found, deleting"
+            Remove-Item $location -recurse -force
+        }else{
+            Write-Host "Pending file rename $($location) not found"
+        }
+    }
+}
+
 function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
     Write-Host "Installing $($packageName)"
     $expandedFilePath = Expand-String $filePath
@@ -108,6 +121,9 @@ $ErrorActionPreference = "Continue"
 
 Write-Host "Config file loaded $($config)"
 
+Write-Host "Abount to clean known pending renames"
+Clear-Known-Pending-Renames $pendingFileRenames
+Write-Host "Pending renames cleared"
 
 Write-Host "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages
