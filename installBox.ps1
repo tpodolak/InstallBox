@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Stop"
+Import-Module (Join-Path $Boxstarter.BaseDir Boxstarter.Bootstrapper\Get-PendingReboot.ps1) -global -DisableNameChecking
 # Boxstarter options
 $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$false
