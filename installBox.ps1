@@ -70,7 +70,7 @@ function Install-Local-Packages ($packages, $installedPackages){
 
 function Install-Choco-Packages ($packages){
     foreach ($package in $packages) {
-        cinst $package
+        cinst $package --allow-empty-checksums
     }
 }
 
