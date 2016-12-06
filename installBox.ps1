@@ -4,22 +4,41 @@ $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$false
 $Boxstarter.AutoLogin=$true
 
-$regexPath = (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement") -replace "\\","\\"
 
-$pendingFileRenames = @( "\\\?\?\\$($regexPath)" + "*.+\r\n?|\n" )
+$pendingFileRenames = @( ("\??\" + (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement" )), "abccccc")
+
+#$regexPath = (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement") -replace "\\","\\"
+#$pendingFileRenames = @( "\\\?\?\\$($regexPath)" + "*.+" )
 
 function Clear-Known-Pending-Renames($pendingRenames){
     $regKey = "HKLM:SYSTEM\CurrentControlSet\Control\Session Manager\"
     $regProperty = "PendingFileRenameOperations"
-    $currentValue = Get-ItemProperty -Path $regKey | Select -ExpandProperty $regProperty
-    Write-Host "Current pending file rename operations $(Get-PendingReboot)"
-    foreach($value in $pendingFileRenames){
-        $currentValue = $currentValue -replace $value, ""
-    }
+    $pendingReboot = Get-PendingReboot
 
-    Set-ItemProperty -Path $regKey -Name $regProperty -Value $currentValue
-    $currentValue = Get-ItemProperty -Path $regKey | Select -ExpandProperty $regProperty
-    Write-Host "Updated pending file rename operations $(Get-PendingReboot)"
+    Write-Host "Current pending reboot $($pendingReboot | Out-String)"
+
+    if($pendingReboot."PendFileRename"){
+        $output = @();
+        # TODO LINQ equivalent SelectMany etc, make more efficient as this is uglllly
+        foreach($fileName in $pendingReboot.PendFileRenVal){
+            foreach($split in $fileName.Split([Environment]::NewLine)){
+                $exclude = $false;
+                foreach($rename in $pendingFileRenames){
+                    if($split.StartsWith($rename)){
+                       $exclude = $true
+                       break;
+                    }
+                }
+
+                if(($exclude -eq $false) -and ![string]::IsNullOrWhiteSpace($split) -and ($output -notcontains $split)){
+                    $output += $split
+                }
+            }
+        }
+
+        Set-ItemProperty -Path $regKey -Name $regProperty -Value ([string]::Join([Environment]::NewLine, $output))
+        Write-Host "Updated pending reboot $(Get-PendingReboot | Out-String)"
+    }
 }
 
 function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
