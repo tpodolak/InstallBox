@@ -152,13 +152,13 @@ $ErrorActionPreference = "Continue"
 
 Write-Host "Config file loaded $($config | Out-String)"
 
-Write-Host "Abount to disable power saving mode"
-Disable-Power-Saving
-Write-Host "Power saving mode disabled"
-
 Write-Host "Abount to clean known pending renames"
 Clear-Known-Pending-Renames $pendingFileRenames
 Write-Host "Pending renames cleared"
+
+Write-Host "Abount to disable power saving mode"
+Disable-Power-Saving
+Write-Host "Power saving mode disabled"
 
 Write-Host "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages
