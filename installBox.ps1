@@ -125,6 +125,12 @@ function Restore-Folder-Structure ($path){
     }
 }
 
+function Disable-Power-Saving() {
+    powercfg -change -standby-timeout-ac 0
+    powercfg -change -standby-timeout-dc 0
+    powercfg -hibernate off
+}
+
 function New-Directory-Symlink ($source,$destination){
     cmd /c mklink /D $destination $source
 }
@@ -144,7 +150,11 @@ if($config -eq $null){
 
 $ErrorActionPreference = "Continue"
 
-Write-Host "Config file loaded $($config)"
+Write-Host "Config file loaded $($config | Out-String)"
+
+Write-Host "Abount to disable power saving mode"
+Disable-Power-Saving
+Write-Host "Power saving mode disabled"
 
 Write-Host "Abount to clean known pending renames"
 Clear-Known-Pending-Renames $pendingFileRenames
