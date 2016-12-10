@@ -32,7 +32,10 @@ function Get-File ($url, $location) {
 $webLaucher = "http://boxstarter.org/package/url?$InstallScript"
 
 $ErrorActionPreference = "Stop"
+
+[System.IO.Directory]::SetCurrentDirectory(((Get-Location -PSProvider FileSystem).ProviderPath))
 $Config = [IO.Path]::GetFullPath($Config)
+
 $configSchema = "config.schema.json"
 $pathValidationConfig = @{ "localPackages" = @("path"); "configs" = @("source"); }
 
