@@ -158,7 +158,7 @@ Write-BoxstarterMessage "Config file loaded $($config | Out-String)"
 
 Write-BoxstarterMessage "Abount to clean known pending renames"
 Clear-Known-Pending-Renames $knownPendingFileRenames $config.pendingFileRenames
-Write-BoxstarterMessage "Pending renames cleared"
+Write-BoxstarterMessage "Known pending renames cleared"
 
 Write-BoxstarterMessage "Abount to disable power saving mode"
 Disable-Power-Saving

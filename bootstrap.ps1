@@ -93,7 +93,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host ($NuGetOutput | out-string)
 
-Write-Host "About to load file `{$NEWTONSOFT_JSON}`, `{$NEWTONSOFT_JSON_SCHEMA}` assemblies"
+Write-Host "About to load `{$NEWTONSOFT_JSON}`, `{$NEWTONSOFT_JSON_SCHEMA}` assemblies"
 
 Add-Type -Path $NEWTONSOFT_JSON
 Add-Type -Path $NEWTONSOFT_JSON_SCHEMA
