@@ -144,10 +144,6 @@ function Expand-String($source){
     return $ExecutionContext.InvokeCommand.ExpandString($source)
 }
 
-function Write-Step($message) {
-    Write-Host $message -ForegroundColor Green
-}
-
 #[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\OneDrive\\Configs\\Boxstarter\\config.json", "Machine")
 
 $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
@@ -158,45 +154,45 @@ if($config -eq $null){
 
 $ErrorActionPreference = "Continue"
 
-Write-Step "Config file loaded $($config | Out-String)"
+Write-BoxstarterMessage "Config file loaded $($config | Out-String)"
 
-Write-Step "Abount to clean known pending renames"
+Write-BoxstarterMessage "Abount to clean known pending renames"
 Clear-Known-Pending-Renames $knownPendingFileRenames $config.pendingFileRenames
-Write-Step "Pending renames cleared"
+Write-BoxstarterMessage "Pending renames cleared"
 
-Write-Step "Abount to disable power saving mode"
+Write-BoxstarterMessage "Abount to disable power saving mode"
 Disable-Power-Saving
-Write-Step "Power saving mode disabled"
+Write-BoxstarterMessage "Power saving mode disabled"
 
-Write-Step "About to install choco packages"
+Write-BoxstarterMessage "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages $config.ignoreChecksums
-Write-Step "Choco packages installed"
+Write-BoxstarterMessage "Choco packages installed"
 
 refreshenv
 
-Write-Step "About to install windows features"
+Write-BoxstarterMessage "About to install windows features"
 Install-Windows-Features $config.windowsFeatures
-Write-Step "Windows features installed"
+Write-BoxstarterMessage "Windows features installed"
 
-Write-Step "About to install local packages"
+Write-BoxstarterMessage "About to install local packages"
 Install-Local-Packages $config.localPackages $installedPrograms
-Write-Step "Local packages installed"
+Write-BoxstarterMessage "Local packages installed"
 
-Write-Step "About to run custom scripts"
+Write-BoxstarterMessage "About to run custom scripts"
 Invoke-Custom-Scripts $config.customScripts
-Write-Step "Custom scripts run";
+Write-BoxstarterMessage "Custom scripts run";
 
-Write-Step "About to copy configs"
+Write-BoxstarterMessage "About to copy configs"
 Copy-Configs $config.configs
-Write-Step "Configs copied"
+Write-BoxstarterMessage "Configs copied"
 
-Write-Step "About to pin taskbar items"
+Write-BoxstarterMessage "About to pin taskbar items"
 New-TaskBar-Items $config.taskBarItems
-Write-Step "Taskbar items pinned"
+Write-BoxstarterMessage "Taskbar items pinned"
 
 if($config.installWindowsUpdates){
-    Write-Step "About to install windows updates"
+    Write-BoxstarterMessage "About to install windows updates"
     Install-WindowsUpdate -Full -SuppressReboots
-    Write-Step "Windows updates installed"
+    Write-BoxstarterMessage "Windows updates installed"
 }
 
