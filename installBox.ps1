@@ -20,7 +20,7 @@ function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
     $regProperty = "PendingFileRenameOperations"
     $pendingReboot = Get-PendingReboot
 
-    Write-Host "Current pending reboot $($pendingReboot | Out-String)"
+    Write-BoxstarterMessage "Current pending reboot $($pendingReboot | Out-String)"
     
     if($pendingReboot."PendFileRename"){
         $output = @();
@@ -42,7 +42,7 @@ function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
         }
 
         Set-ItemProperty -Path $regKey -Name $regProperty -Value ([string]::Join([Environment]::NewLine, $output))
-        Write-Host "Updated pending reboot $(Get-PendingReboot | Out-String)"
+        Write-BoxstarterMessage "Updated pending reboot $(Get-PendingReboot | Out-String)"
     }
 }
 
