@@ -1,17 +1,15 @@
 $ErrorActionPreference = "Stop"
 Import-Module (Join-Path $Boxstarter.BaseDir Boxstarter.Bootstrapper\Get-PendingReboot.ps1) -global -DisableNameChecking
-# Boxstarter options
+# # Boxstarter options
 $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$false
 $Boxstarter.AutoLogin=$true
 
 
-$pendingFileRenames = @( ("\??\" + (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement" )), "abccccc")
+$knownPendingFileRenames = @( ("\??\" + (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement" )))
 
-#$regexPath = (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement") -replace "\\","\\"
-#$pendingFileRenames = @( "\\\?\?\\$($regexPath)" + "*.+" )
-
-function Clear-Known-Pending-Renames($pendingRenames){
+function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
+    $pendingRenames = $pendingRenames + $configPendingRenames
     $regKey = "HKLM:SYSTEM\CurrentControlSet\Control\Session Manager\"
     $regProperty = "PendingFileRenameOperations"
     $pendingReboot = Get-PendingReboot
@@ -24,7 +22,7 @@ function Clear-Known-Pending-Renames($pendingRenames){
         foreach($fileName in $pendingReboot.PendFileRenVal){
             foreach($split in $fileName.Split([Environment]::NewLine)){
                 $exclude = $false;
-                foreach($rename in $pendingFileRenames){
+                foreach($rename in $pendingRenames){
                     if($split.StartsWith($rename)){
                        $exclude = $true
                        break;
@@ -68,9 +66,9 @@ function Install-Local-Packages ($packages, $installedPackages){
     }
 }
 
-function Install-Choco-Packages ($packages){
+function Install-Choco-Packages ($packages, $ignorechecksums){
     foreach ($package in $packages) {
-        cinst $package --ignorechecksums
+        cinst $package --ignorechecksums:$ignorechecksums
     }
 }
 
@@ -139,7 +137,6 @@ function Expand-String($source){
     return $ExecutionContext.InvokeCommand.ExpandString($source)
 }
 
-#just for test
 #[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\OneDrive\\Configs\\Boxstarter\\config.json", "Machine")
 
 $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
@@ -153,7 +150,7 @@ $ErrorActionPreference = "Continue"
 Write-Host "Config file loaded $($config | Out-String)"
 
 Write-Host "Abount to clean known pending renames"
-Clear-Known-Pending-Renames $pendingFileRenames
+Clear-Known-Pending-Renames $knownPendingFileRenames $config.pendingFileRenames
 Write-Host "Pending renames cleared"
 
 Write-Host "Abount to disable power saving mode"
@@ -161,7 +158,7 @@ Disable-Power-Saving
 Write-Host "Power saving mode disabled"
 
 Write-Host "About to install choco packages"
-Install-Choco-Packages $config.chocolateyPackages
+Install-Choco-Packages $config.chocolateyPackages $config.ignoreChecksums
 Write-Host "Choco packages installed"
 
 refreshenv
@@ -186,7 +183,9 @@ Write-Host "About to pin taskbar items"
 New-TaskBar-Items $config.taskBarItems
 Write-Host "Taskbar items pinned"
 
-Write-Host "About to install windows updates"
-Install-WindowsUpdate -Full -SuppressReboots
-Write-Host "Windows updates installed"
+if($config.installWindowsUpdates){
+    Write-Host "About to install windows updates"
+    Install-WindowsUpdate -Full -SuppressReboots
+    Write-Host "Windows updates installed"
+}
 

@@ -2,6 +2,18 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "properties": {
+        "ignoreChecksums": {
+            "type": "boolean"
+        },
+        "installWindowsUpdates": {
+            "type": "boolean"
+        },
+        "pendingFileRenames": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "chocolateyPackages": {
             "type": "array",
             "items": {
@@ -37,18 +49,7 @@
         },
         "taskBarItems": {
             "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "path": {
-                        "type": "string"
-                    }
-                },
-                "required": ["name", "path"]
-            }
+            "items": {}
         },
         "configs": {
             "type": "array",
@@ -96,5 +97,5 @@
             }
         }
     },
-    "required": ["chocolateyPackages", "localPackages", "taskBarItems", "configs", "customScripts", "windowsFeatures"]
+    "required": ["ignoreChecksums", "installWindowsUpdates", "pendingFileRenames", "chocolateyPackages", "localPackages", "taskBarItems", "configs", "customScripts", "windowsFeatures"]
 }
