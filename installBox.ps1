@@ -8,6 +8,12 @@ $Boxstarter.AutoLogin=$true
 
 $knownPendingFileRenames = @( ("\??\" + (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement" )))
 
+function Invoke-Reboot-If-Required() {
+    if (($Boxstarter.RebootOk -eq $true) -and (Test-Pending-Reboot -eq $true)) {
+        Invoke-Reboot
+    }
+}
+
 function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
     $pendingRenames = $pendingRenames + $configPendingRenames
     $regKey = "HKLM:SYSTEM\CurrentControlSet\Control\Session Manager\"
@@ -48,9 +54,10 @@ function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitC
     $process = Start-Process $expandedFilePath $expandedSilentArgs -NoNewWindow -Wait -PassThru
     if($validExitCodes -notcontains $process.ExitCode){
         Write-Error "Process $($filePath) returned invalid exit code $($process.ExitCode)"
-        Write-Error "Package $($packageName) was not installed correctly"   
+        Write-Error "Package $($packageName) was not installed correctly"
     }else{
         Write-Host "Package $($packageName) was successfully installed"
+        Invoke-Reboot-If-Required
     }
 }
 
