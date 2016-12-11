@@ -15,7 +15,7 @@ function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
     $pendingReboot = Get-PendingReboot
 
     Write-Host "Current pending reboot $($pendingReboot | Out-String)"
-
+    
     if($pendingReboot."PendFileRename"){
         $output = @();
         # TODO LINQ equivalent SelectMany etc, make more efficient as this is uglllly
@@ -137,6 +137,10 @@ function Expand-String($source){
     return $ExecutionContext.InvokeCommand.ExpandString($source)
 }
 
+function Write-Step($message) {
+    Write-Host $message -ForegroundColor Green
+}
+
 #[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\OneDrive\\Configs\\Boxstarter\\config.json", "Machine")
 
 $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
@@ -147,45 +151,45 @@ if($config -eq $null){
 
 $ErrorActionPreference = "Continue"
 
-Write-Host "Config file loaded $($config | Out-String)"
+Write-Step "Config file loaded $($config | Out-String)"
 
-Write-Host "Abount to clean known pending renames"
+Write-Step "Abount to clean known pending renames"
 Clear-Known-Pending-Renames $knownPendingFileRenames $config.pendingFileRenames
-Write-Host "Pending renames cleared"
+Write-Step "Pending renames cleared"
 
-Write-Host "Abount to disable power saving mode"
+Write-Step "Abount to disable power saving mode"
 Disable-Power-Saving
-Write-Host "Power saving mode disabled"
+Write-Step "Power saving mode disabled"
 
-Write-Host "About to install choco packages"
+Write-Step "About to install choco packages"
 Install-Choco-Packages $config.chocolateyPackages $config.ignoreChecksums
-Write-Host "Choco packages installed"
+Write-Step "Choco packages installed"
 
 refreshenv
 
-Write-Host "About to install windows features"
+Write-Step "About to install windows features"
 Install-Windows-Features $config.windowsFeatures
-Write-Host "Windows features installed"
+Write-Step "Windows features installed"
 
-Write-Host "About to install local packages"
+Write-Step "About to install local packages"
 Install-Local-Packages $config.localPackages $installedPrograms
-Write-Host "Local packages installed"
+Write-Step "Local packages installed"
 
-Write-Host "About to run custom scripts"
+Write-Step "About to run custom scripts"
 Invoke-Custom-Scripts $config.customScripts
-Write-Host "Custom scripts run";
+Write-Step "Custom scripts run";
 
-Write-Host "About to copy configs"
+Write-Step "About to copy configs"
 Copy-Configs $config.configs
-Write-Host "Configs copied"
+Write-Step "Configs copied"
 
-Write-Host "About to pin taskbar items"
+Write-Step "About to pin taskbar items"
 New-TaskBar-Items $config.taskBarItems
-Write-Host "Taskbar items pinned"
+Write-Step "Taskbar items pinned"
 
 if($config.installWindowsUpdates){
-    Write-Host "About to install windows updates"
+    Write-Step "About to install windows updates"
     Install-WindowsUpdate -Full -SuppressReboots
-    Write-Host "Windows updates installed"
+    Write-Step "Windows updates installed"
 }
 
