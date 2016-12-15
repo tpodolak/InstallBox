@@ -17,7 +17,7 @@ copy config files and pin taskbar items. In case you need something more specifi
 allows you to specify custom scripts to run during script execution.
 ## Config properties
 
-- ``ignoreChecksums (bool)`` - Allow to ignore checksums for packages provided by the Chocolatey packages.
+- ``ignoreChecksums (bool)`` - Allow to ignore checksums for packages provided by the Chocolatey.
 - ``installWindowsUpdates (bool)`` - Allow to install Windows Updates
 - ``pendingFileRenames (array[string])`` - a collection of pending renames to ignore
   - ``(string)`` - pending rename (expandable)
