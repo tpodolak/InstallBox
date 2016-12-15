@@ -19,7 +19,7 @@ allows you to specify custom scripts to run during script execution.
 
 - ``ignoreChecksums (bool)`` - Allow to ignore checksums for packages provided by the Chocolatey.
 - ``installWindowsUpdates (bool)`` - Allow to install Windows Updates
-- ``pendingFileRenames (array[string])`` - a collection of pending renames to ignore
+- ``pendingFileRenames (array[string])`` - a collection of pending file renames to ignore while checking if reboot is needed.
   - ``(string)`` - pending rename (expandable)
 - ``chocolateyPackages (array[string])`` - a collection of Chocolatey packages to [install](https://github.com/chocolatey/choco/wiki/CommandsInstall#examples)
   - ``(string)`` - valid chocolatey package name
@@ -100,9 +100,6 @@ allows you to specify custom scripts to run during script execution.
 * Copy config files
 * Pin taskbar items
 * Install windows updates
-
-# Handling reboot loop
-TODO
 
 # Known issues
 * Pinning task bar items doesn't work on Windows 10 
