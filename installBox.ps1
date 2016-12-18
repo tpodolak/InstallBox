@@ -22,24 +22,11 @@ function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
 
     Write-BoxstarterMessage "Current pending reboot $($pendingReboot | Out-String)"
     
-    if($pendingReboot."PendFileRename"){
-        $output = @();
-        # TODO LINQ equivalent SelectMany etc, make more efficient as this is uglllly
-        foreach($fileName in $pendingReboot.PendFileRenVal){
-            foreach($split in $fileName.Split([Environment]::NewLine)){
-                $exclude = $false;
-                foreach($rename in $pendingRenames){
-                    if($split.StartsWith($rename)){
-                       $exclude = $true
-                       break;
-                    }
-                }
+    if($pendingReboot.PendFileRename){
 
-                if(($exclude -eq $false) -and ![string]::IsNullOrWhiteSpace($split) -and ($output -notcontains $split)){
-                    $output += $split
-                }
-            }
-        }
+        $output = $pendingReboot.PendFileRenVal | %{$_ -split [Environment]::NewLine} | ? { 
+            $current = $_
+            ![string]::IsNullOrWhiteSpace($current) -and ($pendingRenames | ? { $current.StartsWith($_)  } ).Length -eq 0 } | Get-Unique
 
         Set-ItemProperty -Path $regKey -Name $regProperty -Value ([string]::Join([Environment]::NewLine, $output))
         Write-BoxstarterMessage "Updated pending reboot $(Get-PendingReboot | Out-String)"
