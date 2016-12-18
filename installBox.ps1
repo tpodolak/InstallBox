@@ -28,6 +28,10 @@ function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
             $current = $_
             ![string]::IsNullOrWhiteSpace($current) -and ($pendingRenames | ? { $current.StartsWith($_)  } ).Length -eq 0 } | Get-Unique
 
+        if($output -eq $null){
+            $output = @()
+        }
+        
         Set-ItemProperty -Path $regKey -Name $regProperty -Value ([string]::Join([Environment]::NewLine, $output))
         Write-BoxstarterMessage "Updated pending reboot $(Get-PendingReboot | Out-String)"
     }
