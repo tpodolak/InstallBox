@@ -1,9 +1,9 @@
 $ErrorActionPreference = "Stop"
 Import-Module (Join-Path $Boxstarter.BaseDir Boxstarter.Bootstrapper\Get-PendingReboot.ps1) -global -DisableNameChecking
 # # Boxstarter options
-$Boxstarter.RebootOk=$true
-$Boxstarter.NoPassword=$false
-$Boxstarter.AutoLogin=$true
+$Boxstarter.RebootOk = $true
+$Boxstarter.NoPassword = $false
+$Boxstarter.AutoLogin = $true
 
 
 $knownPendingFileRenames = @( ("\??\" + (Join-Path $env:USERPROFILE "AppData\Local\Temp\Microsoft.PackageManagement" )))
@@ -14,21 +14,21 @@ function Invoke-Reboot-If-Required() {
     }
 }
 
-function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
+function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames) {
     $pendingRenames = $pendingRenames + $configPendingRenames
     $regKey = "HKLM:SYSTEM\CurrentControlSet\Control\Session Manager\"
     $regProperty = "PendingFileRenameOperations"
     $pendingReboot = Get-PendingReboot
 
-    Write-BoxstarterMessage "Current pending reboot $($pendingReboot | Out-String)"
+    Write-BoxstarterMessage "Current pending reboot $pendingReboot" | Out-String
     
-    if($pendingReboot.PendFileRename){
+    if ($pendingReboot.PendFileRename) {
 
-        $output = $pendingReboot.PendFileRenVal | %{$_ -split [Environment]::NewLine} | ? { 
+        $output = $pendingReboot.PendFileRenVal | ForEach-Object {$_ -split [Environment]::NewLine} | Where-Object { 
             $current = $_
-            ![string]::IsNullOrWhiteSpace($current) -and ($pendingRenames | ? { $current.StartsWith($_)  } ).Length -eq 0 } | Get-Unique
+            ![string]::IsNullOrWhiteSpace($current) -and ($pendingRenames | Where-Object { $current.StartsWith($_)  } ).Length -eq 0 } | Get-Unique
 
-        if($output -eq $null){
+        if ($output -eq $null) {
             $output = @()
         }
         
@@ -37,26 +37,28 @@ function Clear-Known-Pending-Renames($pendingRenames, $configPendingRenames){
     }
 }
 
-function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)){
-    Write-Host "Installing $($packageName)"
+function Install-From-Process ($packageName, $silentArgs, $filePath, $validExitCodes = @( 0)) {
+    Write-Host "Installing $packageName"
     $expandedFilePath = Expand-String $filePath
     $expandedSilentArgs = Expand-String $silentArgs;
 
     $process = Start-Process $expandedFilePath $expandedSilentArgs -NoNewWindow -Wait -PassThru
-    if($validExitCodes -notcontains $process.ExitCode){
-        Write-Error "Process $($filePath) returned invalid exit code $($process.ExitCode)"
-        Write-Error "Package $($packageName) was not installed correctly"
-    }else{
-        Write-Host "Package $($packageName) was successfully installed"
+    if ($validExitCodes -notcontains $process.ExitCode) {
+        Write-Error "Process $filePath returned invalid exit code $process.ExitCode"
+        Write-Error "Package $packageName was not installed correctly"
+    }
+    else {
+        Write-Host "Package $packageName was successfully installed"
         Invoke-Reboot-If-Required
     }
 }
 
-function Install-Local-Packages ($packages, $installedPackages){
+function Install-Local-Packages ($packages, $installedPackages) {
     foreach ($package in $packages) {
-        if($installedPackages -like "*$($package.name)*"){
-            Write-Warning "Package $($package.name) already installed"
-        }else{
+        if ($installedPackages -like "*$($package.name)*") {
+            Write-Warning "Package $package.name already installed"
+        }
+        else {
             $expandedArgs = Expand-String $package.args
             $expandedPath = Expand-String $package.path
             Install-From-Process $package.name $expandedArgs $expandedPath $package.validExitCodes
@@ -64,33 +66,34 @@ function Install-Local-Packages ($packages, $installedPackages){
     }
 }
 
-function Install-Choco-Packages ($packages, $ignorechecksums){
+function Install-Choco-Packages ($packages, $ignorechecksums) {
     foreach ($package in $packages) {
         cinst $package --ignorechecksums:$ignorechecksums
     }
 }
 
-function Install-Windows-Features ($packages){
+function Install-Windows-Features ($packages) {
     foreach ($package in $packages) {
         cinst $package -Source windowsfeatures
     }
 }
 
-function Copy-Configs ($packages){
+function Copy-Configs ($packages) {
     foreach ($package in $packages) {
         $source = Expand-String $package.source
         $destination = Expand-String $package.destination
 
-        Write-Host "Copying configs for $($package.name)"
+        Write-Host "Copying configs for $package.name"
         
         Restore-Folder-Structure $destination
-        if($package.deleteIfExists -and (Test-Path $destination)) {
+        if ($package.deleteIfExists -and (Test-Path $destination)) {
             cmd /c rmdir /s /q $destination
         }
 
-        if($package.symlink){
+        if ($package.symlink) {
             New-Directory-Symlink $source $destination
-        }else{
+        }
+        else {
             Copy-Item $source $destination -Recurse -Force
         }
 
@@ -98,10 +101,10 @@ function Copy-Configs ($packages){
     }
 }
 
-function New-TaskBar-Items ($packages){
+function New-TaskBar-Items ($packages) {
     foreach ($package in $packages) {
         $path = Expand-String $package.path
-        Write-Host "Pinning $($package.name)"
+        Write-Host "Pinning $package.name"
         Install-ChocolateyPinnedTaskBarItem $path
         Write-Host "Item pinned"
     }
@@ -109,14 +112,14 @@ function New-TaskBar-Items ($packages){
 
 function Invoke-Custom-Scripts ($scripts) {
     foreach ($script in $scripts) {
-        Write-Host "Abount to run custom script $($script.name)"
+        Write-Host "Abount to run custom script $script.name"
         Invoke-Expression $script.value
-        Write-Host "Finished running $($script.name) script"        
+        Write-Host "Finished running $script.name script"        
     }
 }
 
-function Restore-Folder-Structure ($path){
-    if(!(Test-Path $path)){
+function Restore-Folder-Structure ($path) {
+    if (!(Test-Path $path)) {
         New-Item -ItemType Directory -Path $path
     }
 }
@@ -127,25 +130,25 @@ function Disable-Power-Saving() {
     powercfg -hibernate off
 }
 
-function New-Directory-Symlink ($source,$destination){
+function New-Directory-Symlink ($source, $destination) {
     cmd /c mklink /D $destination $source
 }
 
-function Expand-String($source){
+function Expand-String($source) {
     return $ExecutionContext.InvokeCommand.ExpandString($source)
 }
 
 #[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\OneDrive\\Configs\\Boxstarter\\config.json", "Machine")
 
 $installedPrograms = Get-Package -ProviderName Programs | select -Property Name
-$config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig","Machine")) -Raw  | ConvertFrom-Json
-if($config -eq $null){
+$config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig", "Machine")) -Raw  | ConvertFrom-Json
+if ($config -eq $null) {
     throw "Unable to load config file"
 }
 
 $ErrorActionPreference = "Continue"
 
-Write-BoxstarterMessage "Config file loaded $($config | Out-String)"
+Write-BoxstarterMessage "Config file loaded $config)" | Out-String
 
 Write-BoxstarterMessage "Abount to clean known pending renames"
 Clear-Known-Pending-Renames $knownPendingFileRenames $config.pendingFileRenames
@@ -181,7 +184,7 @@ Write-BoxstarterMessage "About to pin taskbar items"
 New-TaskBar-Items $config.taskBarItems
 Write-BoxstarterMessage "Taskbar items pinned"
 
-if($config.installWindowsUpdates){
+if ($config.installWindowsUpdates) {
     Write-BoxstarterMessage "About to install windows updates"
     Install-WindowsUpdate -Full -SuppressReboots
     Write-BoxstarterMessage "Windows updates installed"
