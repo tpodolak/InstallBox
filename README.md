@@ -1,6 +1,5 @@
 # InstallBox
 A script for setting up a Windows PC using [BoxStarter](http://boxstarter.org/) and [Chocolatey](https://chocolatey.org/).
-
 [![Build status](https://ci.appveyor.com/api/projects/status/wn68aijnen42xiul/branch/master?svg=true)](https://ci.appveyor.com/project/tpodolak/installbox/branch/master)
 # How to use
 Open a elevated PowerShell console and allow to execute PowerShell scripts from remote source
