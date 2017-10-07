@@ -1,0 +1,8 @@
+install:
+  - ps: Install-Module Pester -Force
+
+build: false
+
+test_script:
+# temporary to get build process working again... install pester and add to psmodulepath
+  - ps: . .\testharness.ps1 -Target "RemoteBuild"

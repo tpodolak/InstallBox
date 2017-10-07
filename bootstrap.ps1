@@ -13,7 +13,8 @@ and install applications listed in config.json file
 [CmdletBinding()]
 Param(
     [string]$Config = "config.json",
-    [string]$InstallScript = "https://raw.githubusercontent.com/tpodolak/Boxstarter/master/installBox.ps1"
+    [string]$InstallScript = "https://raw.githubusercontent.com/tpodolak/Boxstarter/master/installBox.ps1",
+    $disableReboots = $false
 )
 
 function Get-File ($url, $location) {
@@ -136,7 +137,13 @@ Write-Host "Installing boxstarter"
 Write-Host "Boxstarter successfully installed"
 
 Write-Host "Running InstallBox with config: $InstallScript"
-Install-BoxstarterPackage -PackageName $InstallScript
+
+if ($disableReboots) {
+    Install-BoxstarterPackage -PackageName $InstallScript -DisableReboots -DisableRestart  
+}
+else {
+    Install-BoxstarterPackage -PackageName $InstallScript    
+}
 Write-Host "InstallBox script finished"
 
 exit $LASTEXITCODE

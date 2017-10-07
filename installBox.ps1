@@ -140,7 +140,7 @@ function Expand-String($source) {
 
 #[environment]::SetEnvironmentVariable("BoxstarterConfig","E:\\OneDrive\\Configs\\Boxstarter\\config.json", "Machine")
 
-$installedPrograms = Get-Package -ProviderName Programs | select -Property Name
+$installedPrograms = Get-Package -ProviderName Programs | Select-Object -Property Name
 $config = Get-Content ([environment]::GetEnvironmentVariable("BoxstarterConfig", "Machine")) -Raw  | ConvertFrom-Json
 if ($config -eq $null) {
     throw "Unable to load config file"

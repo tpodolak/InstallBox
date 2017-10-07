@@ -1,0 +1,19 @@
+{
+    "ignoreChecksums": true,
+
+    "installWindowsUpdates": false,
+
+    "pendingFileRenames": [],
+
+    "chocolateyPackages": [],
+
+    "windowsFeatures": [],
+
+    "localPackages": [],
+
+    "customScripts": [],
+
+    "configs": [],
+
+    "taskBarItems": []
+}
